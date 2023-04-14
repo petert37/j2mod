@@ -163,6 +163,11 @@ public class ModbusTCPTransaction extends ModbusTransaction {
                 //   b) we have been told to check the validity and the request/response transaction IDs don't match AND
                 //   c) we haven't exceeded the maximum retry count
                 if (responseIsInValid()) {
+
+                    // If this has happened, then we should close the connection before re-trying
+                    logger.debug("Response is invalid - closing connection {}:{}", connection.getAddress(), connection.getPort());
+                    connection.close();
+
                     retryCounter++;
                     if (retryCounter >= retryLimit) {
                         throw new ModbusIOException("Executing transaction failed (tried %d times)", retryLimit);
@@ -180,6 +185,10 @@ public class ModbusTCPTransaction extends ModbusTransaction {
             }
             catch (ModbusIOException ex) {
 
+                // If this has happened, then we should close the connection before re-trying
+                logger.debug("Failed request {} (try: {}) request transaction ID = {} - {} closing connection {}:{}", request.getHexMessage(), retryCounter, request.getTransactionID(), ex.getMessage(), connection.getAddress().toString(), connection.getPort());
+                connection.close();
+
                 // Up the retry counter and check if we are exhausted
                 retryCounter++;
                 if (retryCounter >= retryLimit) {
@@ -190,10 +199,6 @@ public class ModbusTCPTransaction extends ModbusTransaction {
                     logger.debug("Failed transaction Request: {} (try: {}) - retrying after {} milliseconds", request.getHexMessage(), retryCounter, sleepTime);
                     ModbusUtil.sleep(sleepTime);
                 }
-
-                // If this has happened, then we should close and re-open the connection before re-trying
-                logger.debug("Failed request {} (try: {}) request transaction ID = {} - {} closing and re-opening connection {}:{}", request.getHexMessage(), retryCounter, request.getTransactionID(), ex.getMessage(), connection.getAddress().toString(), connection.getPort());
-                connection.close();
             }
 
             // Increment the transaction ID if we are still trying
