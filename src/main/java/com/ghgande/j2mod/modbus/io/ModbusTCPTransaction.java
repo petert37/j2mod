@@ -193,8 +193,7 @@ public class ModbusTCPTransaction extends ModbusTransaction {
                 retryCounter++;
                 if (retryCounter >= retryLimit) {
                     throw new ModbusIOException("Executing transaction %s failed (tried %d times) %s", request.getHexMessage(), retryLimit, ex.getMessage());
-                }
-                else {
+                } else {
                     long sleepTime = getRandomSleepTime(retryCounter);
                     logger.debug("Failed transaction Request: {} (try: {}) - retrying after {} milliseconds", request.getHexMessage(), retryCounter, sleepTime);
                     ModbusUtil.sleep(sleepTime);
@@ -211,7 +210,6 @@ public class ModbusTCPTransaction extends ModbusTransaction {
         if (isReconnecting()) {
             connection.close();
         }
-        incrementTransactionID();
     }
 
     /**
@@ -241,16 +239,8 @@ public class ModbusTCPTransaction extends ModbusTransaction {
      * transaction ID incremented as well so that sending the same transaction
      * again won't cause problems.
      */
-    private synchronized void incrementTransactionID() {
-        if (isCheckingValidity()) {
-            if (transactionID >= Modbus.MAX_TRANSACTION_ID) {
-                transactionID = Modbus.DEFAULT_TRANSACTION_ID;
-            }
-            else {
-                transactionID++;
-            }
-        }
-        request.setTransactionID(getTransactionID());
+    private void incrementTransactionID() {
+        request.setTransactionID(getNextTransactionID());
     }
 
 }
