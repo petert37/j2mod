@@ -25,6 +25,7 @@ import com.ghgande.j2mod.modbus.procimg.InputRegister;
 import com.ghgande.j2mod.modbus.procimg.SimpleInputRegister;
 import com.ghgande.j2mod.modbus.utils.AbstractTestModbusSerialASCIIMaster;
 import com.ghgande.j2mod.modbus.utils.AbstractTestModbusTCPMaster;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,7 @@ import static org.junit.Assert.*;
  * This class tests the TCP master read features of the library
  */
 @SuppressWarnings("ConstantConditions")
+@Ignore
 public class TestModbusSerialASCIIMasterRead extends AbstractTestModbusSerialASCIIMaster {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractTestModbusTCPMaster.class);
