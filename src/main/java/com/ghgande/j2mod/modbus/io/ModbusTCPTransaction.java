@@ -224,7 +224,7 @@ public class ModbusTCPTransaction extends ModbusTransaction {
             return true;
         }
         else if (!response.isHeadless() && validityCheck) {
-            return request.getTransactionID() != response.getTransactionID();
+            return request.getTransactionID() != response.getTransactionID() || request.getUnitID() != response.getUnitID();
         }
         else {
             return false;
