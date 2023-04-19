@@ -42,7 +42,7 @@ public abstract class ModbusTransaction {
     boolean validityCheck = Modbus.DEFAULT_VALIDITYCHECK;
     int retries = Modbus.DEFAULT_RETRIES;
     private final Random random = new Random(System.nanoTime());
-    private int transactionID = Modbus.DEFAULT_TRANSACTION_ID;
+    private int transactionID = random.nextInt(Modbus.MAX_TRANSACTION_ID - 1000) + 1;
 
     /**
      * Returns the <tt>ModbusRequest</tt> instance
