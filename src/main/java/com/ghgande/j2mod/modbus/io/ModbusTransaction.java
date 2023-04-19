@@ -42,7 +42,7 @@ public abstract class ModbusTransaction {
     boolean validityCheck = Modbus.DEFAULT_VALIDITYCHECK;
     int retries = Modbus.DEFAULT_RETRIES;
     private final Random random = new Random(System.nanoTime());
-    static int transactionID = Modbus.DEFAULT_TRANSACTION_ID;
+    private int transactionID = random.nextInt(Modbus.MAX_TRANSACTION_ID - 1000) + 1;
 
     /**
      * Returns the <tt>ModbusRequest</tt> instance
@@ -67,7 +67,7 @@ public abstract class ModbusTransaction {
     public void setRequest(ModbusRequest req) {
         request = req;
         if (req != null) {
-            request.setTransactionID(getTransactionID());
+            request.setTransactionID(getNextTransactionID());
         }
     }
 
@@ -128,9 +128,14 @@ public abstract class ModbusTransaction {
 
     /**
      * getTransactionID -- get the next transaction ID to use.
+     *
      * @return next transaction ID to use
      */
-    public synchronized int getTransactionID() {
+    protected synchronized int getNextTransactionID() {
+
+        // Always increment the transaction ID before returning it.
+        transactionID++;
+
         /*
          * Ensure that the transaction ID is in the valid range between
          * 0 and MAX_TRANSACTION_ID (65534).  If not, the value will be forced

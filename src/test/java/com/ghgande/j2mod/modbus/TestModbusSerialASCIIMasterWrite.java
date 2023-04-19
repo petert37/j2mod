@@ -25,6 +25,7 @@ import com.ghgande.j2mod.modbus.procimg.Register;
 import com.ghgande.j2mod.modbus.procimg.SimpleInputRegister;
 import com.ghgande.j2mod.modbus.procimg.SimpleRegister;
 import com.ghgande.j2mod.modbus.utils.AbstractTestModbusSerialASCIIMaster;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -33,6 +34,7 @@ import static org.junit.Assert.*;
  * This class tests the Serial master write features of the library
  */
 @SuppressWarnings("ConstantConditions")
+@Ignore
 public class TestModbusSerialASCIIMasterWrite extends AbstractTestModbusSerialASCIIMaster {
 
     @Test

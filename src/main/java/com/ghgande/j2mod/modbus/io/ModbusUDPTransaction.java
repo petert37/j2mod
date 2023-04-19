@@ -15,7 +15,6 @@
  */
 package com.ghgande.j2mod.modbus.io;
 
-import com.ghgande.j2mod.modbus.Modbus;
 import com.ghgande.j2mod.modbus.ModbusException;
 import com.ghgande.j2mod.modbus.ModbusIOException;
 import com.ghgande.j2mod.modbus.ModbusSlaveException;
@@ -137,6 +136,7 @@ public class ModbusUDPTransaction extends ModbusTransaction {
                 }
                 else {
                     ModbusUtil.sleep(getRandomSleepTime(retryCount));
+                    incrementTransactionID();
                 }
             }
         }
@@ -150,9 +150,6 @@ public class ModbusUDPTransaction extends ModbusTransaction {
         if (isCheckingValidity()) {
             checkValidity();
         }
-
-        //toggle the id
-        incrementTransactionID();
     }
 
     /**
@@ -176,14 +173,6 @@ public class ModbusUDPTransaction extends ModbusTransaction {
      * the identifiers will start from zero again.
      */
     private void incrementTransactionID() {
-        if (isCheckingValidity()) {
-            if (transactionID >= Modbus.MAX_TRANSACTION_ID) {
-                transactionID = Modbus.DEFAULT_TRANSACTION_ID;
-            }
-            else {
-                transactionID++;
-            }
-        }
-        request.setTransactionID(getTransactionID());
+        request.setTransactionID(getNextTransactionID());
     }
 }

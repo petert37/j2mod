@@ -163,6 +163,11 @@ public class ModbusTCPTransaction extends ModbusTransaction {
                 //   b) we have been told to check the validity and the request/response transaction IDs don't match AND
                 //   c) we haven't exceeded the maximum retry count
                 if (responseIsInValid()) {
+
+                    // If this has happened, then we should close the connection before re-trying
+                    logger.debug("Response is invalid - closing connection {}:{}", connection.getAddress(), connection.getPort());
+                    connection.close();
+
                     retryCounter++;
                     if (retryCounter >= retryLimit) {
                         throw new ModbusIOException("Executing transaction failed (tried %d times)", retryLimit);
@@ -180,20 +185,19 @@ public class ModbusTCPTransaction extends ModbusTransaction {
             }
             catch (ModbusIOException ex) {
 
+                // If this has happened, then we should close the connection before re-trying
+                logger.debug("Failed request {} (try: {}) request transaction ID = {} - {} closing connection {}:{}", request.getHexMessage(), retryCounter, request.getTransactionID(), ex.getMessage(), connection.getAddress().toString(), connection.getPort());
+                connection.close();
+
                 // Up the retry counter and check if we are exhausted
                 retryCounter++;
                 if (retryCounter >= retryLimit) {
                     throw new ModbusIOException("Executing transaction %s failed (tried %d times) %s", request.getHexMessage(), retryLimit, ex.getMessage());
-                }
-                else {
+                } else {
                     long sleepTime = getRandomSleepTime(retryCounter);
                     logger.debug("Failed transaction Request: {} (try: {}) - retrying after {} milliseconds", request.getHexMessage(), retryCounter, sleepTime);
                     ModbusUtil.sleep(sleepTime);
                 }
-
-                // If this has happened, then we should close and re-open the connection before re-trying
-                logger.debug("Failed request {} (try: {}) request transaction ID = {} - {} closing and re-opening connection {}:{}", request.getHexMessage(), retryCounter, request.getTransactionID(), ex.getMessage(), connection.getAddress().toString(), connection.getPort());
-                connection.close();
             }
 
             // Increment the transaction ID if we are still trying
@@ -206,7 +210,6 @@ public class ModbusTCPTransaction extends ModbusTransaction {
         if (isReconnecting()) {
             connection.close();
         }
-        incrementTransactionID();
     }
 
     /**
@@ -221,7 +224,7 @@ public class ModbusTCPTransaction extends ModbusTransaction {
             return true;
         }
         else if (!response.isHeadless() && validityCheck) {
-            return request.getTransactionID() != response.getTransactionID();
+            return request.getTransactionID() != response.getTransactionID() || request.getUnitID() != response.getUnitID();
         }
         else {
             return false;
@@ -236,16 +239,8 @@ public class ModbusTCPTransaction extends ModbusTransaction {
      * transaction ID incremented as well so that sending the same transaction
      * again won't cause problems.
      */
-    private synchronized void incrementTransactionID() {
-        if (isCheckingValidity()) {
-            if (transactionID >= Modbus.MAX_TRANSACTION_ID) {
-                transactionID = Modbus.DEFAULT_TRANSACTION_ID;
-            }
-            else {
-                transactionID++;
-            }
-        }
-        request.setTransactionID(getTransactionID());
+    private void incrementTransactionID() {
+        request.setTransactionID(getNextTransactionID());
     }
 
 }
